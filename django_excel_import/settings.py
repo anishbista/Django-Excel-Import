@@ -25,8 +25,11 @@ SECRET_KEY = "django-insecure-1+msdhqh-b-3kzkuw5-^)_71z)7zhmy7@lvc8o5#uj-5dnk+&r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    "django-excel-import.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 # Application definition
 
