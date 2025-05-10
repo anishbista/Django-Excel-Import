@@ -1,3 +1,4 @@
 from django.contrib import admin
+from .models import ImportJob, ImportLog
 
-# Register your models here.
+admin.site.register([ImportJob, ImportLog])

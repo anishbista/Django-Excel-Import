@@ -47,13 +47,14 @@ class ProductValidator:
     def validate_price(row_data, row_num):
         warnings = []
         try:
-            price = float(row_data.get("price", 0))
+            price_str = row_data.get("price", "0").replace(",", ".").split()[0]
+            price = float(price_str)
             if price <= 0:
                 warnings.append("Price should be greater than 0")
 
-            sale_price = row_data.get("sale_price")
-            if sale_price:
-                sale_price = float(sale_price)
+            sale_price_str = row_data.get("sale_price", "").replace(",", ".").split()[0]
+            if sale_price_str:
+                sale_price = float(sale_price_str)
                 if sale_price <= 0:
                     warnings.append("Sale price should be greater than 0")
                 if sale_price >= price:

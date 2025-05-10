@@ -6,7 +6,8 @@ from .models import ImportJob, ImportLog
 from .serializers import ImportJobSerializer, ImportLogSerializer
 from utils.excel_processor import ExcelProductProcessor
 import threading
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from utils.pagination import LogPagination
 
 
 @extend_schema_view(
@@ -47,23 +48,23 @@ class ImportProductView(generics.CreateAPIView):
             )
 
         import_job = ImportJob.objects.create(file=file)
+        processor = ExcelProductProcessor(import_job.id)
+        processor.process()
 
-        # Process in background
-        def process_import():
-            try:
-                processor = ExcelProductProcessor(import_job.id)
-                processor.process()
-            except Exception as e:
-                import_job.status = "failed"
-                import_job.save()
-                ImportLog.objects.create(
-                    job=import_job,
-                    log_type="error",
-                    message=f"Processing failed: {str(e)}",
-                )
+        # def process_import():
+        #     try:
+        #
+        #     except Exception as e:
+        #         import_job.status = "failed"
+        #         import_job.save()
+        #         ImportLog.objects.create(
+        #             job=import_job,
+        #             log_type="error",
+        #             message=f"Processing failed: {str(e)}",
+        #         )
 
-        thread = threading.Thread(target=process_import)
-        thread.start()
+        # thread = threading.Thread(target=process_import)
+        # thread.start()
 
         return Response(
             ImportJobSerializer(import_job).data, status=status.HTTP_201_CREATED
@@ -75,6 +76,20 @@ class ImportProductView(generics.CreateAPIView):
         operation_id="get_import_job_details",
         summary="Get import job details",
         description="Retrieve details of a specific import job, including logs",
+        parameters=[
+            OpenApiParameter(
+                name="page",
+                description="Page number for paginated logs",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="page_size",
+                description="Number of logs per page",
+                required=False,
+                type=int,
+            ),
+        ],
     )
 )
 class ImportJobDetailView(generics.RetrieveAPIView):
@@ -86,9 +101,11 @@ class ImportJobDetailView(generics.RetrieveAPIView):
         serializer = self.get_serializer(instance)
 
         logs = ImportLog.objects.filter(job=instance)
-        log_serializer = ImportLogSerializer(logs, many=True)
+        paginator = LogPagination()
+        paginated_logs = paginator.paginate_queryset(logs, request)
+        log_serializer = ImportLogSerializer(paginated_logs, many=True)
 
         response_data = serializer.data
         response_data["logs"] = log_serializer.data
 
-        return Response(response_data)
+        return paginator.get_paginated_response(response_data)

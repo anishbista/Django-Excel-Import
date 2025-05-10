@@ -16,6 +16,9 @@ class Product(CommonModel):
     sale_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    shipping = models.CharField(max_length=255, blank=True, null=True)
+    additional_image_link = models.URLField(blank=True, null=True)
+
     item_group_id = models.CharField(max_length=100, blank=True, null=True)
     google_product_category = models.CharField(max_length=255, blank=True, null=True)
     product_type = models.CharField(max_length=255, blank=True, null=True)
