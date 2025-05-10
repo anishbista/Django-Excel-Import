@@ -48,23 +48,23 @@ class ImportProductView(generics.CreateAPIView):
             )
 
         import_job = ImportJob.objects.create(file=file)
-        processor = ExcelProductProcessor(import_job.id)
-        processor.process()
 
-        # def process_import():
-        #     try:
-        #
-        #     except Exception as e:
-        #         import_job.status = "failed"
-        #         import_job.save()
-        #         ImportLog.objects.create(
-        #             job=import_job,
-        #             log_type="error",
-        #             message=f"Processing failed: {str(e)}",
-        #         )
+        def process_import():
+            try:
+                processor = ExcelProductProcessor(import_job.id)
+                processor.process()
 
-        # thread = threading.Thread(target=process_import)
-        # thread.start()
+            except Exception as e:
+                import_job.status = "failed"
+                import_job.save()
+                ImportLog.objects.create(
+                    job=import_job,
+                    log_type="error",
+                    message=f"Processing failed: {str(e)}",
+                )
+
+        thread = threading.Thread(target=process_import)
+        thread.start()
 
         return Response(
             ImportJobSerializer(import_job).data, status=status.HTTP_201_CREATED
