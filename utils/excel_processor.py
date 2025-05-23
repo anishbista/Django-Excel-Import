@@ -134,7 +134,7 @@ class ExcelProductProcessor:
             if not price_str:
                 return None
             try:
-                return float(price_str.replace(",", ".").split()[0])
+                return float(price_str.replace(",", "").split()[0])
             except (ValueError, AttributeError):
                 return None
 
